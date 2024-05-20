@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Verify Projects needed for Logging exist
+      block:      
+        - name: Check projects exists
+          ansible.builtin.shell: 
+            cmd: |
+              oc project "{{ item }}"
+          changed_when: false
+          loop: "{{ proj_list }}"
+

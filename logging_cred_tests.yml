@@ -1,0 +1,14 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Test Logging Credentials
+      block:
+        - name: Verify Logging Credendtials
+          ansible.builtin.shell:
+            cmd: oc get crd "{{ item }}"
+          changed_when: false
+          loop: "{{ cred_list }}"

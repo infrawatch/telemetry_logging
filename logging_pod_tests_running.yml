@@ -1,0 +1,34 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    pod_state_str: "Running"
+    pod_status_str: "Running"
+
+
+  tasks:
+    - name: "Remove {{ pod_out_file }} file if present"
+      ansible.builtin.shell:
+        cmd: rm -f "{{ pod_out_file }}"
+      ignore_errors: yes
+      changed_when: false
+
+
+    - name: Verify Pods in "{{ nspace }}" "{{ pod_state_str }}"
+      ansible.builtin.shell:
+        cmd: |
+          PODNAME="{{ item }}"      
+          PODNAME_INST=$(oc get pod -n "{{ nspace }}" | grep "{{ item }}" | grep "{{ pod_status_str }}" | awk '{print $1;}')
+          PODSTATUS=$(oc describe pod -n "{{ nspace }}" $PODNAME | grep "State:" | awk '{print $2;}' | grep -m 1 "{{ pod_state_str }}")
+          echo "${PODNAME},${PODNAME_INST},${PODSTATUS}" >> "{{ pod_out_file }}"
+      changed_when: false
+      loop: "{{ pod_list }}"
+
+
+#    - name: Check Pod State
+#      ansible.builtin.shell:
+#        cmd: |
+#          echo "{{ item }}" | grep "{{ pod_state_str }}"
+#      changed_when: false
+#      loop: "{{ lookup('file', pod_out_file).splitlines() }}"
